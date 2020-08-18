@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getRuns, saveTable } from './services/services';
+import { getRuns, saveTable, deleteItems } from './services/services';
 import { exportExcel } from './util/excel';
 import { makeStyles, TextField, Button } from '@material-ui/core';
 import { HotTable } from '@handsontable/react';
@@ -25,8 +25,8 @@ function HomePage() {
   const [runs, setRuns] = useState({
     runs: [],
   });
-  const [filteredInventory, setFilteredRuns] = useState({
-    filteredRuns: [],
+  const [filteredInventory, setFilteredInventory] = useState({
+    filteredInventory: [],
   });
   const [columns, setColumns] = useState({
     columns: [],
@@ -39,17 +39,17 @@ function HomePage() {
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
     let searchTerm = event.target.value;
-    if (searchTerm == '') return setFilteredRuns(runs);
+    if (searchTerm == '') return setFilteredInventory(runs);
 
-    var searchResults = [];
+    let searchResults = [];
     searchResults = runs.filter((el) => {
       return Object.values(el).join().toLowerCase().includes(searchTerm.toLowerCase());
     });
     if (searchResults.length == 0) {
       setSorting(false);
-      setFilteredRuns([[]]);
+      setFilteredInventory([[]]);
     } else {
-      setFilteredRuns(searchResults);
+      setFilteredInventory(searchResults);
     }
   };
 
@@ -62,7 +62,30 @@ function HomePage() {
   };
 
   const handleSave = () => {
-    saveTable(JSON.stringify(hotTableComponent.current.hotInstance.getSourceData()));
+    saveTable(JSON.stringify(hotTableComponent.current.hotInstance.getSourceData())).then((resp) => {
+      setFilteredInventory(resp.rows);
+      console.log(resp);
+    });
+  };
+
+  const handleDelete = () => {
+    let selected = hotTableComponent.current.hotInstance.getSelected();
+    if (selected) {
+      let selectedItems = [];
+
+      for (let i = 0; i < selected.length; i += 1) {
+        let item = selected[i];
+        let itemToDelete = filteredInventory[item[0]];
+        if (itemToDelete._id) {
+          selectedItems.push(itemToDelete.sku);
+        }
+      }
+
+      deleteItems(selectedItems).then((resp) => {
+        setFilteredInventory(resp.rows);
+        console.log(resp);
+      });
+    }
   };
 
   async function handleRuns() {
@@ -70,7 +93,7 @@ function HomePage() {
       console.log(result);
 
       setRuns(result.rows);
-      setFilteredRuns(result.rows);
+      setFilteredInventory(result.rows);
       setColumns(result.columns);
       setIsLoading(false);
     });
@@ -93,6 +116,9 @@ function HomePage() {
           <Button id='save' onClick={handleSave} color='secondary' variant='contained' type='submit'>
             Save
           </Button>
+          <Button id='save' onClick={handleDelete} color='secondary' variant='outlined' type='submit'>
+            Delete Selected
+          </Button>
         </div>
         <HotTable
           ref={hotTableComponent}
@@ -101,6 +127,8 @@ function HomePage() {
           colHeaders={columns ? Object.keys(columns).map((el) => columns[el].columnHeader) : ''}
           columns={columns}
           filters='true'
+          selectionMode='multiple'
+          outsideClickDeselects={false}
           columnSorting={sorting}
           manualColumnResize={true}
           licenseKey='non-commercial-and-evaluation'

@@ -1,3 +1,3 @@
-# IGO Run Planner
+# IGO Inventory
 
-Shows ready to go runs.
+Simple inventory management app.

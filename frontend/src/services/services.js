@@ -46,3 +46,12 @@ export function saveTable(data) {
       console.error('Unable to get Get Inventory: ' + error.message);
     });
 }
+
+export function deleteItems(items) {
+  return axios
+    .post(`${BACKEND}/api/inventory/deleteItems`, { items })
+    .then(parseResp)
+    .catch((error) => {
+      console.error('Unable to get Get Inventory: ' + error.message);
+    });
+}

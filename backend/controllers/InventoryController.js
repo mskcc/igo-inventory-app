@@ -7,6 +7,8 @@ const ttl = 60 * 60 * 1; // cache for 1 Hour
 const cache = new Cache(ttl); // Create a new cache service instance
 const { logger } = require('../helpers/winston');
 const InventoryModel = require('../models/InventoryModel');
+var mongoose = require('mongoose');
+var ObjectId = mongoose.Types.ObjectId;
 
 const columns = [
   { columnHeader: 'Product Name', data: 'name', edit: 'admin' },
@@ -48,18 +50,6 @@ exports.saveInventory = [
     let inventory = JSON.parse(req.body.data);
 
     inventory = inventory.filter((item) => item.sku && item.sku !== '');
-    inventory.forEach((element) => {
-      console.log(element);
-
-      Object.keys(element).forEach((key) => {
-        console.log(element[key]);
-        if (element[key] === '') {
-          delete element[key];
-        }
-      });
-    });
-    console.log(inventory);
-    console.log(typeof inventory);
 
     var mongoOps = [];
     inventory.forEach((item) => {
@@ -82,27 +72,51 @@ exports.saveInventory = [
 
     InventoryModel.bulkWrite(mongoOps)
 
-      .then((result) =>
-        apiResponse.successResponseWithData(res, 'success', {
-          rows: [['']],
-          columns: columns,
-        })
-      )
+      .then(() => {
+        InventoryModel.find({})
+          .lean()
+          .then((result) =>
+            apiResponse.successResponseWithData(res, 'success', {
+              rows: result,
+              columns: columns,
+            })
+          )
+          .catch((err) => {
+            return apiResponse.ErrorResponse(res, err.message);
+          });
+      })
       .catch((err) => {
         return apiResponse.errorResponse(res, err.message);
       });
   },
 ];
 
-// // UTIL
-// generateGrid = (data) => {
-//   data.forEach((element) => {
-//     try {
-//       element.altConcentration = element.altConcentration.toFixed(2);
-//       element.concentration = concentration.toFixed(3);
-//     } catch (error) {
-//       return;
-//     }
-//   });
-//   return data;
-// };
+exports.deleteItems = [
+  // authenticateRequest,
+  // body('items').isJSON().withMessage('items must be valid JSON.'),
+  function (req, res) {
+    logger.log('info', 'Deleting from Inventory');
+
+    let items = req.body.items;
+
+    InventoryModel.deleteMany({ sku: { $in: items } })
+
+      .then(() => {
+        InventoryModel.find({})
+          .lean()
+          .then((result) =>
+            apiResponse.successResponseWithData(res, 'success', {
+              rows: result,
+              columns: columns,
+            })
+          )
+          .catch((err) => {
+            return apiResponse.ErrorResponse(res, err.message);
+          });
+      })
+
+      .catch((err) => {
+        return apiResponse.errorResponse(res, err.message);
+      });
+  },
+];
