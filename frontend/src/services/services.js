@@ -28,13 +28,12 @@ const parseResp = (resp) => {
 };
 
 export function getRuns() {
-  console.log('what');
-
   return axios
     .get(`${BACKEND}/api/inventory/inventory`)
     .then(parseResp)
     .catch((error) => {
-      console.error('Unable to get Get Inventory: ' + error.message);
+      console.error('Unable to get Get Inventory: ' + error.response.data.message);
+      throw 'Unable to get Get Inventory: ' + error.response.data.message;
     });
 }
 
@@ -43,15 +42,39 @@ export function saveTable(data) {
     .post(`${BACKEND}/api/inventory/save`, { data })
     .then(parseResp)
     .catch((error) => {
-      console.error('Unable to get Get Inventory: ' + error.message);
+      console.error('Unable to save Inventory: ' + error.response.data.message);
+      throw 'Unable to save Inventory: ' + error.response.data.message;
     });
 }
 
 export function deleteItems(items) {
+  console.log(items);
+  
   return axios
     .post(`${BACKEND}/api/inventory/deleteItems`, { items })
     .then(parseResp)
     .catch((error) => {
-      console.error('Unable to get Get Inventory: ' + error.message);
+      console.error('Unable to get Get Inventory: ' + error.response.data.message);
+      throw 'Unable to get Get Inventory: ' + error.response.data.message;
+    });
+}
+
+export function removeOneFromInventory(sku) {
+  return axios
+    .post(`${BACKEND}/api/inventory/remove?sku=${sku}`)
+    .then(parseResp)
+    .catch((error) => {
+      console.error('Unable to remove from Inventory: ' + error.response.data.message);
+      throw 'Unable to remove from Inventory: ' + error.response.data.message;
+    });
+}
+
+export function deleteInventory() {
+  return axios
+    .post(`${BACKEND}/api/inventory/deleteAll`)
+    .then(parseResp)
+    .catch((error) => {
+      console.error('Unable to delete Inventory: ' + error.response.data.message);
+      throw 'Unable to delete Inventory: ' + error.response.data.message;
     });
 }

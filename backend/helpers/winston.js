@@ -9,7 +9,7 @@ const { format } = winston;
 const { combine, label, json, timestamp } = format;
 container.add(constants.logger, {
   format: combine(
-    label({ label: 'Sample-Sub' }), // Added to log lines, e.g. { ..., "label":"App-Template"}
+    label({ label: 'Inventory' }), // Added to log lines, e.g. { ..., "label":"App-Template"}
     timestamp(),
     json()
   ),

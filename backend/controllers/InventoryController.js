@@ -11,11 +11,12 @@ var mongoose = require('mongoose');
 var ObjectId = mongoose.Types.ObjectId;
 
 const columns = [
-  { columnHeader: 'Product Name', data: 'name', edit: 'admin' },
-  { columnHeader: 'SKU', data: 'sku', edit: 'admin' },
-  { columnHeader: '#Available', data: 'amountAvailable', type: 'numeric', edit: 'all' },
-  { columnHeader: '#Ordered', data: 'amountOrdered', type: 'numeric', edit: 'all' },
-  { columnHeader: 'Order Status', data: 'orderStatus', edit: 'admin' },
+  { columnHeader: 'Product Name', data: 'name', readOnly: true },
+  { columnHeader: 'SKU', data: 'sku', readOnly: true },
+  { columnHeader: '#Available', data: 'amountAvailable', type: 'numeric', readOnly: false },
+  { columnHeader: '#Ordered', data: 'amountOrdered', type: 'numeric', readOnly: true },
+  { columnHeader: 'Order Status', data: 'orderStatus', readOnly: true },
+  { columnHeader: 'Notes', data: 'notes', readOnly: false },
 ];
 /**
  * Returns runs
@@ -29,6 +30,7 @@ exports.getInventory = [
     logger.log('info', 'Retrieving Inventory');
 
     InventoryModel.find({})
+      .sort('name')
       .lean()
       .then((result) =>
         apiResponse.successResponseWithData(res, 'success', {
@@ -38,55 +40,6 @@ exports.getInventory = [
       )
       .catch((err) => {
         return apiResponse.ErrorResponse(res, err.message);
-      });
-  },
-];
-
-exports.saveInventory = [
-  // authenticateRequest,
-  body('inventory').isJSON().withMessage('inventory must be valid JSON.'),
-  function (req, res) {
-    logger.log('info', 'Saving Inventory');
-    let inventory = JSON.parse(req.body.data);
-
-    inventory = inventory.filter((item) => item.sku && item.sku !== '');
-
-    var mongoOps = [];
-    inventory.forEach((item) => {
-      mongoOps.push({
-        updateOne: {
-          filter: { sku: item.sku },
-          update: {
-            $set: {
-              amountOrdered: item.amountOrdered,
-              name: item.name,
-              amountAvailable: item.amountAvailable,
-              orderStatus: item.orderStatus,
-            },
-            $setOnInsert: { item },
-          },
-          upsert: true,
-        },
-      });
-    });
-
-    InventoryModel.bulkWrite(mongoOps)
-
-      .then(() => {
-        InventoryModel.find({})
-          .lean()
-          .then((result) =>
-            apiResponse.successResponseWithData(res, 'success', {
-              rows: result,
-              columns: columns,
-            })
-          )
-          .catch((err) => {
-            return apiResponse.ErrorResponse(res, err.message);
-          });
-      })
-      .catch((err) => {
-        return apiResponse.errorResponse(res, err.message);
       });
   },
 ];
@@ -103,6 +56,7 @@ exports.deleteItems = [
 
       .then(() => {
         InventoryModel.find({})
+          .sort('name')
           .lean()
           .then((result) =>
             apiResponse.successResponseWithData(res, 'success', {
@@ -112,6 +66,120 @@ exports.deleteItems = [
           )
           .catch((err) => {
             return apiResponse.ErrorResponse(res, err.message);
+          });
+      })
+
+      .catch((err) => {
+        return apiResponse.errorResponse(res, err.message);
+      });
+  },
+];
+
+exports.remove = [
+  // authenticateRequest,
+  // body('items').isJSON().withMessage('items must be valid JSON.'),
+  function (req, res) {
+    logger.log('info', 'Deleting from Inventory');
+
+    let sku = req.query.sku;
+
+    InventoryModel.updateOne({ sku: sku }, { $inc: { amountAvailable: -1 } })
+      .then(() => {
+        InventoryModel.find({})
+          .sort('name')
+          .lean()
+          .then((result) =>
+            apiResponse.successResponseWithData(res, 'success', {
+              rows: result,
+              columns: columns,
+            })
+          )
+          .catch((err) => {
+            return apiResponse.ErrorResponse(res, err.message);
+          });
+      })
+
+      .catch((err) => {
+        return apiResponse.errorResponse(res, err.message);
+      });
+  },
+];
+
+exports.deleteAll = [
+  // authenticateRequest,
+  // body('items').isJSON().withMessage('items must be valid JSON.'),
+  function (req, res) {
+    logger.log('info', 'Deleting from Inventory');
+
+    InventoryModel.deleteMany()
+      .then(() => {
+        return apiResponse.successResponseWithData(res, 'success', {
+          columns: columns,
+        });
+      })
+      .catch((err) => {
+        return apiResponse.ErrorResponse(res, err.message);
+      });
+  },
+];
+
+exports.saveInventory = [
+  // authenticateRequest,
+  body('inventory').isJSON().withMessage('inventory must be valid JSON.'),
+  function (req, res) {
+    logger.log('info', 'Saving Inventory');
+    let inventory = JSON.parse(req.body.data);
+
+    inventory = inventory.filter((item) => item.sku && item.sku !== '');
+    inventory.forEach((element) => {
+      Object.keys(element).forEach((key) => {
+        if ((key === 'amountAvailable' && !!!element[key]) || (key === 'amountOrdered' && !!!element[key])) {
+          element[key] = 0;
+        }
+        if (element[key] === '') {
+          delete element[key];
+        }
+      });
+    });
+
+    var mongoOps = [];
+    inventory.forEach((item) => {
+      mongoOps.push({
+        updateOne: {
+          filter: { sku: item.sku },
+          update: {
+            $set: {
+              sku: item.sku,
+              amountOrdered: item.amountOrdered,
+              name: item.name,
+              amountAvailable: item.amountAvailable,
+              orderStatus: item.orderStatus,
+              notes: item.notes,
+            },
+            $setOnInsert: { item },
+          },
+          upsert: true,
+        },
+      });
+    });
+
+    InventoryModel.bulkWrite(mongoOps)
+
+      .then((result) => {
+        InventoryModel.find({})
+          .sort('name')
+          .lean()
+          .then((result) =>
+            apiResponse.successResponseWithData(res, 'success', {
+              rows: result,
+              columns: columns,
+            })
+          )
+          .catch((err) => {
+            return apiResponse.errorResponseWithData(res, err.message, {
+              rows: inventory,
+              columns: columns,
+            });
           });
       })
 

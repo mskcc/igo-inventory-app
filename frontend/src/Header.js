@@ -12,7 +12,7 @@ function Header() {
         <Avatar alt='mskcc logo' src={logo} className={classes.avatar} />
 
         <Typography color='inherit' variant='h6' className={classes.title}>
-          IGO Run Planner
+          IGO Inventory
         </Typography>
       </Toolbar>
     </AppBar>

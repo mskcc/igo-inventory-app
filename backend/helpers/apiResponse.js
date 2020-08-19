@@ -34,7 +34,14 @@ exports.errorResponse = function (res, msg) {
   logger.log('error', msg);
   return res.status(500).json(data);
 };
-
+exports.errorResponseWithData = function (res, msg, data) {
+  var resData = {
+    status: 1,
+    message: msg,
+    data: data
+  };
+  return res.status(500).json(resData);
+};
 exports.notFoundResponse = function (res, msg) {
   var data = {
     status: 0,

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getRuns, saveTable, deleteItems } from './services/services';
+import { getRuns, saveTable, deleteItems, removeOneFromInventory, deleteInventory } from './services/services';
 import { exportExcel } from './util/excel';
-import { makeStyles, TextField, Button } from '@material-ui/core';
+import { makeStyles, TextField, Button, Snackbar } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 import { HotTable } from '@handsontable/react';
 import 'handsontable/dist/handsontable.full.css';
 import LoadingOverlay from 'react-loading-overlay';
+import { SHEET_PW } from './configs/config';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -18,11 +20,12 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     gap: '2em',
   },
+  textField: { minWidth: 310 },
 }));
 function HomePage() {
   const classes = useStyles();
   const hotTableComponent = React.createRef();
-  const [runs, setRuns] = useState({
+  const [runs, setInventory] = useState({
     runs: [],
   });
   const [filteredInventory, setFilteredInventory] = useState({
@@ -33,9 +36,22 @@ function HomePage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [username, setUsername] = React.useState('');
+  const [skus, setSkus] = React.useState('');
+  const [takeOut, setTakeOut] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const [sorting, setSorting] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [message, setMessage] = React.useState({ message: '', severity: 'success' });
 
+  const debouncedTakeOut = useDebounce(takeOut, 500);
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
     let searchTerm = event.target.value;
@@ -53,8 +69,41 @@ function HomePage() {
     }
   };
 
-  const handleUsername = (event) => {
-    setUsername(event.target.value);
+  const handlePassword = (event) => {
+    setPassword(event.target.value);
+    console.log(SHEET_PW);
+
+    if (event.target.value === SHEET_PW) {
+      console.log('admin');
+      hotTableComponent.current.hotInstance.updateSettings({
+        cells: function (row, col) {
+          var cellProperties = {};
+
+          cellProperties.readOnly = false;
+
+          return cellProperties;
+        },
+      });
+    } else
+      hotTableComponent.current.hotInstance.updateSettings({
+        cells: function (row, col) {
+          var cellProperties = {};
+
+          cellProperties.readOnly = columns[col].readOnly;
+
+          return cellProperties;
+        },
+      });
+  };
+
+  const handleSkus = (rows) => {
+    let skus = [];
+    rows.map((item) => {
+      if (!!item.sku) {
+        skus.push(item.sku.toUpperCase());
+      }
+    });
+    setSkus(skus);
   };
 
   const handleExport = () => {
@@ -62,10 +111,16 @@ function HomePage() {
   };
 
   const handleSave = () => {
-    saveTable(JSON.stringify(hotTableComponent.current.hotInstance.getSourceData())).then((resp) => {
-      setFilteredInventory(resp.rows);
-      console.log(resp);
-    });
+    saveTable(JSON.stringify(hotTableComponent.current.hotInstance.getSourceData()))
+      .then((result) => {
+        setFilteredInventory(result.rows);
+        handleSkus(result.rows);
+      })
+      .catch((error) => {
+        setOpen(true);
+        setMessage({ message: 'Error: ' + error, severity: 'error' });
+      });
+    // }
   };
 
   const handleDelete = () => {
@@ -74,52 +129,135 @@ function HomePage() {
       let selectedItems = [];
 
       for (let i = 0; i < selected.length; i += 1) {
+        console.log(item);
+
         let item = selected[i];
+
         let itemToDelete = filteredInventory[item[0]];
         if (itemToDelete._id) {
           selectedItems.push(itemToDelete.sku);
         }
       }
 
-      deleteItems(selectedItems).then((resp) => {
-        setFilteredInventory(resp.rows);
-        console.log(resp);
+      deleteItems(selectedItems).then((result) => {
+        setFilteredInventory(result.rows);
+        handleSkus(result.rows);
       });
     }
   };
 
-  async function handleRuns() {
+  async function handleInventory() {
     getRuns().then((result) => {
-      console.log(result);
-
-      setRuns(result.rows);
+      setInventory(result.rows);
       setFilteredInventory(result.rows);
       setColumns(result.columns);
       setIsLoading(false);
+      handleSkus(result.rows);
     });
   }
 
   useEffect(() => {
     setIsLoading(true);
-    handleRuns();
+    handleInventory();
   }, []);
+
+  useEffect(
+    () => {
+      // Make sure we have a value (user has entered something in input)
+      if (debouncedTakeOut) {
+        let inputItem = debouncedTakeOut.toUpperCase();
+
+        if (skus.includes(inputItem)) {
+          let itemToDecrease = filteredInventory.filter((element) => {
+            return element.sku && element.sku.toUpperCase() === inputItem;
+          })[0];
+          console.log(itemToDecrease);
+
+          if (!itemToDecrease || !itemToDecrease.amountAvailable || itemToDecrease.amountAvailable <= 0) {
+            setOpen(true);
+            setMessage({
+              message: 'Not enough left! If you know there are more items, you can put them in first.',
+              severity: 'error',
+            });
+            return;
+          }
+          removeOneFromInventory(itemToDecrease.sku)
+            .then((result) => {
+              setFilteredInventory(result.rows);
+              setOpen(true);
+              setTakeOut('');
+              setMessage({ message: 'Removed one ' + itemToDecrease.sku, severity: 'success' });
+            })
+            .catch((error) => {
+              setOpen(true);
+              setMessage({ message: 'Error: ' + error, severity: 'error' });
+            });
+        }
+        setOpen(true);
+        setMessage({ message: 'SKU not found in sheet.', severity: 'warning' });
+      }
+    },
+    // This is the useEffect input array
+    // Our useEffect function will only execute if this value changes ...
+    // ... and thanks to our hook it will only change if the original ...
+    // value (searchTerm) hasn't changed for more than 500ms.
+    [debouncedTakeOut]
+  );
+
+  // Our hook
+  function useDebounce(value, delay) {
+    // State and setters for debounced value
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+      // Set debouncedValue to value (passed in) after the specified delay
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value]);
+
+    return debouncedValue;
+  }
 
   return (
     <div className={classes.container}>
       <LoadingOverlay active={isLoading} spinner text='Loading...'>
         <div className={classes.toolbar}>
+          <TextField
+            id='take'
+            label='Take Out - PLEASE SCAN SKU'
+            variant='outlined'
+            value={takeOut}
+            className={classes.textField}
+            onChange={(e) => setTakeOut(e.target.value)}
+          />
           <TextField id='search' label='Search' variant='outlined' value={searchTerm} onChange={handleSearch} />
-          <TextField id='username' label='MSK Username' variant='outlined' value={username} onChange={handleUsername} />
-          <Button id='gridExport' onClick={handleExport} color='primary' variant='contained' type='submit'>
-            Export Excel
-          </Button>
+          <TextField id='sheetpw' label='Password' variant='outlined' value={password} onChange={handlePassword} />
+
           <Button id='save' onClick={handleSave} color='secondary' variant='contained' type='submit'>
-            Save
+            Save after changing Grid directly
           </Button>
           <Button id='save' onClick={handleDelete} color='secondary' variant='outlined' type='submit'>
             Delete Selected
           </Button>
+          <Button id='gridExport' onClick={handleExport} color='primary' variant='contained' type='submit'>
+            Export Excel
+          </Button>
         </div>
+        <Snackbar
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={open}
+          autoHideDuration={6000}
+          onClose={handleClose}
+        >
+          <Alert onClose={handleClose} severity={message.severity}>
+            {message.message}
+          </Alert>
+        </Snackbar>
         <HotTable
           ref={hotTableComponent}
           data={filteredInventory}
