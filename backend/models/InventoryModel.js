@@ -10,6 +10,7 @@ var InventorySchema = new Schema({
   amountAvailable: { type: Number, default: 0 },
   orderStatus: { type: String, default: '' },
   notes: { type: String, default: '' },
+  discrepancies: { type: String, default: '' },
 });
 
 InventorySchema.static('findOrCreateItem', function (newItem) {

@@ -17,6 +17,7 @@ const columns = [
   { columnHeader: '#Ordered', data: 'amountOrdered', type: 'numeric', readOnly: true },
   { columnHeader: 'Order Status', data: 'orderStatus', readOnly: true },
   { columnHeader: 'Notes', data: 'notes', readOnly: false },
+  { columnHeader: 'Discrepancies', data: 'notes', readOnly: false },
 ];
 /**
  * Returns runs
@@ -155,6 +156,7 @@ exports.saveInventory = [
               amountAvailable: item.amountAvailable,
               orderStatus: item.orderStatus,
               notes: item.notes,
+              discrepancies: item.discrepancies,
             },
             $setOnInsert: { item },
           },
