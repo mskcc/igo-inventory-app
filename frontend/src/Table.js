@@ -6,7 +6,7 @@ import Alert from '@material-ui/lab/Alert';
 import { HotTable } from '@handsontable/react';
 import 'handsontable/dist/handsontable.full.css';
 import LoadingOverlay from 'react-loading-overlay';
-import { SHEET_PW } from './configs/config';
+import { SHEET_PWS } from './configs/config';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -71,9 +71,8 @@ function HomePage() {
 
   const handlePassword = (event) => {
     setPassword(event.target.value);
-    console.log(SHEET_PW);
 
-    if (event.target.value === SHEET_PW) {
+    if (SHEET_PWS.includes(event.target.value.toUpperCase())) {
       console.log('admin');
       hotTableComponent.current.hotInstance.updateSettings({
         cells: function (row, col) {
@@ -241,7 +240,14 @@ function HomePage() {
           <Button id='save' onClick={handleSave} color='secondary' variant='contained' type='submit'>
             Save after changing Grid directly
           </Button>
-          <Button id='save' onClick={handleDelete} color='secondary' variant='outlined' type='submit'>
+          <Button
+            id='save'
+            onClick={handleDelete}
+            disabled={password.toLowerCase() !== SHEET_PWS}
+            color='secondary'
+            variant='outlined'
+            type='submit'
+          >
             Delete Selected
           </Button>
           <Button id='gridExport' onClick={handleExport} color='primary' variant='contained' type='submit'>
