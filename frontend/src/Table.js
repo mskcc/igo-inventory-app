@@ -4,6 +4,7 @@ import { exportExcel } from './util/excel';
 import { makeStyles, TextField, Button, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { HotTable } from '@handsontable/react';
+
 import 'handsontable/dist/handsontable.full.css';
 import LoadingOverlay from 'react-loading-overlay';
 import { SHEET_PWS } from './configs/config';
@@ -19,6 +20,16 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(2),
     display: 'flex',
     gap: '2em',
+  },
+  snackbar: {
+    top: '30%',
+  },
+  alert: {
+    padding: '2em',
+    fontSize: '1.7em',
+    '& .MuiAlert-icon': {
+      fontSize: '1.7em',
+    },
   },
   textField: { minWidth: 310 },
 }));
@@ -114,6 +125,8 @@ function HomePage() {
       .then((result) => {
         setFilteredInventory(result.rows);
         handleSkus(result.rows);
+        setOpen(true);
+        setMessage({ message: 'Saved', severity: 'success' });
       })
       .catch((error) => {
         setOpen(true);
@@ -257,10 +270,11 @@ function HomePage() {
         <Snackbar
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           open={open}
+          className={classes.snackbar}
           autoHideDuration={6000}
           onClose={handleClose}
         >
-          <Alert onClose={handleClose} severity={message.severity}>
+          <Alert className={classes.alert} onClose={handleClose} severity={message.severity}>
             {message.message}
           </Alert>
         </Snackbar>
