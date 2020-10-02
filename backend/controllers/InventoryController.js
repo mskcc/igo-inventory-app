@@ -28,7 +28,7 @@ exports.getInventory = [
   // authenticateRequest,
 
   function (req, res) {
-    logger.log('info', 'Retrieving Inventory');
+    // logger.log('info', 'Retrieving Inventory');
 
     InventoryModel.find({})
       .sort('name')

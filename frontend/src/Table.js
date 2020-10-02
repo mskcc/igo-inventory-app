@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getRuns, saveTable, deleteItems, removeOneFromInventory, deleteInventory } from './services/services';
+import { getRuns, saveTable, deleteItems, removeOneFromInventory } from './services/services';
 import { exportExcel } from './util/excel';
 import { makeStyles, TextField, Button, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import { HotTable } from '@handsontable/react';
+import Handsontable from 'handsontable';
 
 import 'handsontable/dist/handsontable.full.css';
 import LoadingOverlay from 'react-loading-overlay';
@@ -66,13 +67,13 @@ function HomePage() {
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
     let searchTerm = event.target.value;
-    if (searchTerm == '') return setFilteredInventory(runs);
+    if (searchTerm === '') return setFilteredInventory(runs);
 
     let searchResults = [];
     searchResults = runs.filter((el) => {
       return Object.values(el).join().toLowerCase().includes(searchTerm.toLowerCase());
     });
-    if (searchResults.length == 0) {
+    if (searchResults.length === 0) {
       setSorting(false);
       setFilteredInventory([[]]);
     } else {
@@ -88,9 +89,7 @@ function HomePage() {
       hotTableComponent.current.hotInstance.updateSettings({
         cells: function (row, col) {
           var cellProperties = {};
-
           cellProperties.readOnly = false;
-
           return cellProperties;
         },
       });
@@ -108,7 +107,7 @@ function HomePage() {
 
   const handleSkus = (rows) => {
     let skus = [];
-    rows.map((item) => {
+    rows.forEach((item) => {
       if (!!item.sku) {
         skus.push(item.sku.toUpperCase());
       }
@@ -141,10 +140,7 @@ function HomePage() {
       let selectedItems = [];
 
       for (let i = 0; i < selected.length; i += 1) {
-        console.log(item);
-
         let item = selected[i];
-
         let itemToDelete = filteredInventory[item[0]];
         if (itemToDelete._id) {
           selectedItems.push(itemToDelete.sku);
@@ -158,19 +154,29 @@ function HomePage() {
     }
   };
 
-  async function handleInventory() {
-    getRuns().then((result) => {
-      setInventory(result.rows);
-      setFilteredInventory(result.rows);
-      setColumns(result.columns);
-      setIsLoading(false);
-      handleSkus(result.rows);
+  const handleColumns = (columns) => {
+    columns.forEach((element) => {
+      if (element.data === 'amountAvailable') {
+        element.renderer = zeroAmounRenderer;
+      }
     });
-  }
+    setColumns(columns);
+  };
 
   useEffect(() => {
     setIsLoading(true);
+    const handleInventory = async () => {
+      getRuns().then((result) => {
+        setInventory(result.rows);
+        setFilteredInventory(result.rows);
+        handleColumns(result.columns);
+        setIsLoading(false);
+        handleSkus(result.rows);
+      });
+    };
     handleInventory();
+    setInterval(handleInventory, 10000);
+
   }, []);
 
   useEffect(
@@ -183,8 +189,6 @@ function HomePage() {
           let itemToDecrease = filteredInventory.filter((element) => {
             return element.sku && element.sku.toUpperCase() === inputItem;
           })[0];
-          console.log(itemToDecrease);
-
           if (!itemToDecrease || !itemToDecrease.amountAvailable || itemToDecrease.amountAvailable <= 0) {
             setOpen(true);
             setMessage({
@@ -198,15 +202,18 @@ function HomePage() {
               setFilteredInventory(result.rows);
               setOpen(true);
               setTakeOut('');
-              setMessage({ message: 'Removed one ' + itemToDecrease.sku, severity: 'success' });
+              if (itemToDecrease.amountAvailable === 1) {
+                setMessage({ message: 'Removed the last ' + itemToDecrease.sku, severity: 'warning' });
+              } else setMessage({ message: 'Removed one ' + itemToDecrease.sku, severity: 'success' });
             })
             .catch((error) => {
               setOpen(true);
               setMessage({ message: 'Error: ' + error, severity: 'error' });
             });
+        } else {
+          setOpen(true);
+          setMessage({ message: 'SKU not found in sheet.', severity: 'warning' });
         }
-        setOpen(true);
-        setMessage({ message: 'SKU not found in sheet.', severity: 'warning' });
       }
     },
     // This is the useEffect input array
@@ -300,3 +307,14 @@ function HomePage() {
 }
 
 export default HomePage;
+
+// Apply custom highlighting to amountAvailable. Surprisingly tricky. Had to set existing classes and textCotent manually. Something about handling td pretty much resets it.
+const zeroAmounRenderer = function (instance, td, row, col, prop, value, cellProperties) {
+  if (value === 0) {
+    td.className = 'htRight htNumeric red-highlight';
+    td.textContent = 0;
+  } else {
+    Handsontable.renderers.NumericRenderer.apply(this, arguments);
+  }
+  return td;
+};
