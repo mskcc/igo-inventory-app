@@ -176,7 +176,6 @@ function HomePage() {
     };
     handleInventory();
     setInterval(handleInventory, 10000);
-
   }, []);
 
   useEffect(
@@ -203,8 +202,15 @@ function HomePage() {
               setOpen(true);
               setTakeOut('');
               if (itemToDecrease.amountAvailable === 1) {
-                setMessage({ message: 'Removed the last ' + itemToDecrease.sku, severity: 'warning' });
-              } else setMessage({ message: 'Removed one ' + itemToDecrease.sku, severity: 'success' });
+                setMessage({
+                  message: `Removed the last ${itemToDecrease.name} (${itemToDecrease.sku})`,
+                  severity: 'warning',
+                });
+              } else
+                setMessage({
+                  message: `Removed the last ${itemToDecrease.name} (${itemToDecrease.sku})`,
+                  severity: 'success',
+                });
             })
             .catch((error) => {
               setOpen(true);
