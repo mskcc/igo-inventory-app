@@ -208,7 +208,7 @@ function HomePage() {
                 });
               } else
                 setMessage({
-                  message: `Removed the last ${itemToDecrease.name} (${itemToDecrease.sku})`,
+                  message: `Removed one ${itemToDecrease.name} (${itemToDecrease.sku})`,
                   severity: 'success',
                 });
             })
