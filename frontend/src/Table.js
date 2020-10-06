@@ -175,7 +175,7 @@ function HomePage() {
       });
     };
     handleInventory();
-    setInterval(handleInventory, 10000);
+    setInterval(handleInventory, 50000);
   }, []);
 
   useEffect(
