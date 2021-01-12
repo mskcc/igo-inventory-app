@@ -95,16 +95,18 @@ function HomePage() {
           return cellProperties;
         },
       });
-    } else setIsAdmin(false);
-    hotTableComponent.current.hotInstance.updateSettings({
-      cells: function (row, col) {
-        var cellProperties = {};
+    } else {
+      setIsAdmin(false);
+      hotTableComponent.current.hotInstance.updateSettings({
+        cells: function (row, col) {
+          var cellProperties = {};
 
-        cellProperties.readOnly = columns[col].readOnly;
+          cellProperties.readOnly = columns[col].readOnly;
 
-        return cellProperties;
-      },
-    });
+          return cellProperties;
+        },
+      });
+    }
   };
 
   const handleSkus = (rows) => {
