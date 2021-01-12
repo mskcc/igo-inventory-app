@@ -51,6 +51,7 @@ function HomePage() {
   const [skus, setSkus] = React.useState('');
   const [takeOut, setTakeOut] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [isAdmin, setIsAdmin] = React.useState('');
   const [sorting, setSorting] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState({ message: '', severity: 'success' });
@@ -86,6 +87,7 @@ function HomePage() {
 
     if (SHEET_PWS.includes(event.target.value.toUpperCase())) {
       console.log('admin');
+      setIsAdmin(true);
       hotTableComponent.current.hotInstance.updateSettings({
         cells: function (row, col) {
           var cellProperties = {};
@@ -93,16 +95,16 @@ function HomePage() {
           return cellProperties;
         },
       });
-    } else
-      hotTableComponent.current.hotInstance.updateSettings({
-        cells: function (row, col) {
-          var cellProperties = {};
+    } else setIsAdmin(false);
+    hotTableComponent.current.hotInstance.updateSettings({
+      cells: function (row, col) {
+        var cellProperties = {};
 
-          cellProperties.readOnly = columns[col].readOnly;
+        cellProperties.readOnly = columns[col].readOnly;
 
-          return cellProperties;
-        },
-      });
+        return cellProperties;
+      },
+    });
   };
 
   const handleSkus = (rows) => {
@@ -269,7 +271,7 @@ function HomePage() {
           <Button
             id='save'
             onClick={handleDelete}
-            disabled={password.toLowerCase() !== SHEET_PWS}
+            disabled={!isAdmin}
             color='secondary'
             variant='outlined'
             type='submit'
