@@ -10,7 +10,7 @@ export const exportExcel = (runs, columns) => {
   var yyyy = today.getFullYear();
 
   today = mm + '-' + dd + '-' + yyyy;
-  let fileName = `RunPlanner-${today}`;
+  let fileName = `IGO-Inventory-List-${today}`;
   workbook.creator = 'IGO';
   workbook.lastModifiedBy = 'IGO';
   workbook.created = new Date();
