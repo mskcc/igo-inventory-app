@@ -17,7 +17,7 @@ export const exportExcel = (runs, columns) => {
   workbook.modified = new Date();
   workbook.lastPrinted = new Date();
 
-  let runplanner = workbook.addWorksheet('runplanner');
+  let runplanner = workbook.addWorksheet('inventoryList');
 
   let sheetColumns = [];
   // add columns first to be able to reference them by key during formatting step
