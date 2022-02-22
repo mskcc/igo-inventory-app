@@ -10,14 +10,14 @@ export const exportExcel = (runs, columns) => {
   var yyyy = today.getFullYear();
 
   today = mm + '-' + dd + '-' + yyyy;
-  let fileName = `RunPlanner-${today}`;
+  let fileName = `IGO-Inventory-List-${today}`;
   workbook.creator = 'IGO';
   workbook.lastModifiedBy = 'IGO';
   workbook.created = new Date();
   workbook.modified = new Date();
   workbook.lastPrinted = new Date();
 
-  let runplanner = workbook.addWorksheet('runplanner');
+  let runplanner = workbook.addWorksheet('inventoryList');
 
   let sheetColumns = [];
   // add columns first to be able to reference them by key during formatting step
