@@ -1,7 +1,6 @@
 const { body, param, query, validationResult } = require('express-validator');
 const apiResponse = require('../helpers/apiResponse');
 // const { authenticateRequest } = require('../middlewares/jwt-cookie');
-const { getRuns } = require('../services/services');
 const Cache = require('../helpers/cache');
 const ttl = 60 * 60 * 1; // cache for 1 Hour
 const cache = new Cache(ttl); // Create a new cache service instance
@@ -17,7 +16,7 @@ const columns = [
   { columnHeader: '#Ordered', data: 'amountOrdered', type: 'numeric', readOnly: true },
   { columnHeader: 'Order Status', data: 'orderStatus', readOnly: true },
   { columnHeader: 'Notes', data: 'notes', readOnly: false },
-  { columnHeader: 'Discrepancies', data: 'notes', readOnly: false },
+  { columnHeader: 'Discrepancies', data: 'discrepancies', readOnly: false },
 ];
 /**
  * Returns runs
