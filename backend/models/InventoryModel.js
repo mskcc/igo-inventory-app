@@ -11,6 +11,8 @@ var InventorySchema = new Schema({
   orderStatus: { type: String, default: '' },
   notes: { type: String, default: '' },
   discrepancies: { type: String, default: '' },
+  minimum: { type: Number, default: null },
+  maximum: { type: Number, default: null },
 });
 
 InventorySchema.static('findOrCreateItem', function (newItem) {
