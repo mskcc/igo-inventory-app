@@ -12,11 +12,11 @@ var ObjectId = mongoose.Types.ObjectId;
 const columns = [
   { columnHeader: 'Product Name', data: 'name', readOnly: true },
   { columnHeader: 'SKU', data: 'sku', readOnly: true },
-  { columnHeader: '#Available', data: 'amountAvailable', type: 'numeric', readOnly: false },
+  { columnHeader: '#Available', data: 'amountAvailable', type: 'numeric', readOnly: true },
   { columnHeader: '#Ordered', data: 'amountOrdered', type: 'numeric', readOnly: true },
   { columnHeader: 'Order Status', data: 'orderStatus', readOnly: true },
-  { columnHeader: 'Min', data: 'minimum', readOnly: false },
-  { columnHeader: 'Max', data: 'maximum', readOnly: false },
+  { columnHeader: 'Min', data: 'minimum', readOnly: true },
+  { columnHeader: 'Max', data: 'maximum', readOnly: true },
   { columnHeader: 'Notes', data: 'notes', readOnly: false },
   { columnHeader: 'Discrepancies', data: 'discrepancies', readOnly: false },
 ];
