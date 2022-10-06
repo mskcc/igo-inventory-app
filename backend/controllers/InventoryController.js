@@ -13,12 +13,10 @@ const columns = [
   { columnHeader: 'Product Name', data: 'name', readOnly: true },
   { columnHeader: 'SKU', data: 'sku', readOnly: true },
   { columnHeader: '#Available', data: 'amountAvailable', type: 'numeric', readOnly: true },
-  { columnHeader: '#Ordered', data: 'amountOrdered', type: 'numeric', readOnly: true },
   { columnHeader: 'Order Status', data: 'orderStatus', readOnly: true },
   { columnHeader: 'Min', data: 'minimum', readOnly: true },
-  { columnHeader: 'Max', data: 'maximum', readOnly: true },
   { columnHeader: 'Notes', data: 'notes', readOnly: false },
-  { columnHeader: 'Discrepancies', data: 'discrepancies', readOnly: false },
+  { columnHeader: 'Location', data: 'discrepancies', readOnly: false },
 ];
 /**
  * Returns runs
@@ -135,7 +133,7 @@ exports.saveInventory = [
     inventory = inventory.filter((item) => item.sku && item.sku !== '');
     inventory.forEach((element) => {
       Object.keys(element).forEach((key) => {
-        if ((key === 'amountAvailable' && !!!element[key]) || (key === 'amountOrdered' && !!!element[key])) {
+        if (key === 'amountAvailable' && !!!element[key]) {
           element[key] = 0;
         }
         if (element[key] === '') {
@@ -152,14 +150,12 @@ exports.saveInventory = [
           update: {
             $set: {
               sku: item.sku,
-              amountOrdered: item.amountOrdered,
               name: item.name,
               amountAvailable: item.amountAvailable,
               orderStatus: item.orderStatus,
               notes: item.notes,
               discrepancies: item.discrepancies,
               minimum: item.minimum,
-              maximum: item.maximum,
             },
             $setOnInsert: { item },
           },
