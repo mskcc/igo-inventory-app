@@ -33,7 +33,7 @@ function App() {
       <Router>
         <Header />
         <Switch>
-          <Route exact path='/otherinventory' component={OtherTable} />
+          <Route path='/otherinventory' component={OtherTable} />
         </Switch>
         <Switch>
           <Route path='/' component={Table} />
