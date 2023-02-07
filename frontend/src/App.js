@@ -4,6 +4,7 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Header from './Header';
 import Table from './Table';
+import OtherTable from './OtherTable';
 
 const theme = createMuiTheme({
   typography: {
@@ -31,6 +32,9 @@ function App() {
     <MuiThemeProvider theme={theme}>
       <Router>
         <Header />
+        <Switch>
+          <Route exact path='/otherinventory' component={OtherTable} />
+        </Switch>
         <Switch>
           <Route path='/' component={Table} />
         </Switch>

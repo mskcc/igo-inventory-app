@@ -12,7 +12,10 @@ function Header() {
         <Avatar alt='mskcc logo' src={logo} className={classes.avatar} />
 
         <Typography color='inherit' variant='h6' className={classes.title}>
-          IGO Inventory
+          <a href='https://igo.mskcc.org/inventory/' className='header-link'>IGO Inventory</a>
+        </Typography>
+        <Typography color='inherit' variant='h6' className={classes.title}>
+          <a href='/otherinventory/' className='header-link'>Other Inventory</a>
         </Typography>
       </Toolbar>
     </AppBar>
