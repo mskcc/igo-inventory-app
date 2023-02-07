@@ -1,7 +1,7 @@
 import React from 'react';
 import { Avatar, AppBar, Toolbar, Typography, makeStyles } from '@material-ui/core';
-
 import logo from './logo.png';
+import { SITE_HOME, OTHER_INVENTORY } from './configs/config';
 
 function Header() {
   const classes = useStyles();
@@ -12,10 +12,10 @@ function Header() {
         <Avatar alt='mskcc logo' src={logo} className={classes.avatar} />
 
         <Typography color='inherit' variant='h6' className={classes.title}>
-          <a href='/igo-inventory/' className='header-link'>IGO Inventory</a>
+          <a href={`${SITE_HOME}`} className='header-link'>IGO Inventory</a>
         </Typography>
         <Typography color='inherit' variant='h6' className={classes.title}>
-          <a href='/igo-inventory/otherinventory/' className='header-link'>Other Inventory</a>
+          <a href={`${OTHER_INVENTORY}`} className='header-link'>Other Inventory</a>
         </Typography>
       </Toolbar>
     </AppBar>

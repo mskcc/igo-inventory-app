@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Header from './Header';
 import Table from './Table';
 import OtherTable from './OtherTable';
+import { SITE_HOME, OTHER_INVENTORY } from './configs/config';
 
 const theme = createMuiTheme({
   typography: {
@@ -33,10 +34,10 @@ function App() {
       <Router>
         <Header />
         <Switch>
-          <Route exact path='/otherinventory' component={OtherTable} />
+          <Route exact path={`${OTHER_INVENTORY}`} component={OtherTable} />
         </Switch>
         <Switch>
-          <Route exact path='/' component={Table} />
+          <Route exact path={`${SITE_HOME}`} component={Table} />
         </Switch>
       </Router>
     </MuiThemeProvider>
