@@ -36,7 +36,7 @@ function App() {
           <Route exact path='/otherinventory' component={OtherTable} />
         </Switch>
         <Switch>
-          <Route path='/' component={Table} />
+          <Route exact path='/' component={Table} />
         </Switch>
       </Router>
     </MuiThemeProvider>
