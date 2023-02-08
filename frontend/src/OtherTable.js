@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from "react-redux";
 import { setPassword } from './slices/appSlice';
-import { getRuns, saveTable, deleteItems, removeOneFromInventory } from './services/services';
+import { getRuns, saveTable, deleteItems, removeOneFromInventory } from './services/otherServices';
 import { exportExcel } from './util/excel';
 import { makeStyles, TextField, Button, Snackbar } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
@@ -36,10 +36,10 @@ const useStyles = makeStyles((theme) => ({
   },
   textField: { minWidth: 310 },
 }));
-function HomePage() {
+function OtherInventoryPage() {
   const classes = useStyles();
   const dispatch = useDispatch()
-  let appPassword = useSelector((state) => state.app.password);
+  const appPassword = useSelector((state) => state.app.password);
   const hotTableComponent = React.createRef();
   const [runs, setInventory] = useState({
     runs: [],
@@ -65,7 +65,6 @@ function HomePage() {
     if (reason === 'clickaway') {
       return;
     }
-
     setOpen(false);
   };
   const handleSearch = (event) => {
@@ -263,7 +262,6 @@ function HomePage() {
 
     return debouncedValue;
   }
-  
 
   return (
     <div className={classes.container}>
@@ -329,7 +327,7 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default OtherInventoryPage;
 
 // Apply custom highlighting to amountAvailable. Surprisingly tricky. Had to set existing classes and textCotent manually. Something about handling td pretty much resets it.
 const zeroAmounRenderer = function (instance, td, row, col, prop, value, cellProperties) {

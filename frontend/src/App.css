@@ -12,3 +12,13 @@ body {
 .handsontable td.red-highlight {
   background-color: #d87586;
 }
+
+.header-link {
+  text-decoration: none !important;
+  color: white !important;
+  cursor: pointer;
+  padding: 16px 10px;
+}
+.active {
+  background-color: #8fc7e8;
+}
