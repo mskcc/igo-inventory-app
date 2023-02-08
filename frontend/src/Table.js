@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from "react-redux";
+import { setPassword } from './slices/appSlice';
 import { getRuns, saveTable, deleteItems, removeOneFromInventory } from './services/services';
 import { exportExcel } from './util/excel';
 import { makeStyles, TextField, Button, Snackbar } from '@material-ui/core';
@@ -36,6 +38,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 function HomePage() {
   const classes = useStyles();
+  const dispatch = useDispatch()
+  let appPassword = useSelector((state) => state.app.password);
   const hotTableComponent = React.createRef();
   const [runs, setInventory] = useState({
     runs: [],
@@ -50,7 +54,6 @@ function HomePage() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [skus, setSkus] = React.useState('');
   const [takeOut, setTakeOut] = React.useState('');
-  const [password, setPassword] = React.useState('');
   const [isAdmin, setIsAdmin] = React.useState('');
   const [sorting, setSorting] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -83,30 +86,8 @@ function HomePage() {
   };
 
   const handlePassword = (event) => {
-    setPassword(event.target.value);
-
-    if (SHEET_PWS.includes(event.target.value.toUpperCase())) {
-      console.log('admin');
-      setIsAdmin(true);
-      hotTableComponent.current.hotInstance.updateSettings({
-        cells: function (row, col) {
-          var cellProperties = {};
-          cellProperties.readOnly = false;
-          return cellProperties;
-        },
-      });
-    } else {
-      setIsAdmin(false);
-      hotTableComponent.current.hotInstance.updateSettings({
-        cells: function (row, col) {
-          var cellProperties = {};
-
-          cellProperties.readOnly = columns[col].readOnly;
-
-          return cellProperties;
-        },
-      });
-    }
+    dispatch(setPassword(event.target.value));
+    setTablePropertiesFromPassword(event.target.value);
   };
 
   const handleSkus = (rows) => {
@@ -166,6 +147,37 @@ function HomePage() {
     });
     setColumns(columns);
   };
+
+  const setTablePropertiesFromPassword = (password) => {
+    if (SHEET_PWS.includes(password.toUpperCase())) {
+      console.log('admin');
+      setIsAdmin(true);
+      hotTableComponent.current.hotInstance.updateSettings({
+        cells: function (row, col) {
+          var cellProperties = {};
+          cellProperties.readOnly = false;
+          return cellProperties;
+        },
+      });
+    } else {
+      setIsAdmin(false);
+      hotTableComponent.current.hotInstance.updateSettings({
+        cells: function (row, col) {
+          var cellProperties = {};
+
+          cellProperties.readOnly = columns[col].readOnly;
+
+          return cellProperties;
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    if(appPassword && appPassword !== '' && SHEET_PWS.includes(appPassword.toUpperCase())) {
+      setTablePropertiesFromPassword(appPassword);
+    }
+  }, [appPassword]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -251,6 +263,7 @@ function HomePage() {
 
     return debouncedValue;
   }
+  
 
   return (
     <div className={classes.container}>
@@ -265,7 +278,7 @@ function HomePage() {
             onChange={(e) => setTakeOut(e.target.value)}
           />
           <TextField id='search' label='Search' variant='outlined' value={searchTerm} onChange={handleSearch} />
-          <TextField id='sheetpw' label='Password' variant='outlined' value={password} onChange={handlePassword} />
+          <TextField id='sheetpw' label='Password' variant='outlined' value={appPassword} onChange={handlePassword} />
 
           <Button id='save' onClick={handleSave} color='secondary' variant='contained' type='submit'>
             Save after changing Grid directly
