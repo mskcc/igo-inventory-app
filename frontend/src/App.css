@@ -12,6 +12,12 @@ body {
 .handsontable td.red-highlight {
   background-color: #d87586;
 }
+.handsontable td.green-highlight {
+  background-color: #97cf92;
+}
+.handsontable td.yellow-highlight {
+  background-color: #e5e997;
+}
 
 .header-link {
   text-decoration: none !important;
