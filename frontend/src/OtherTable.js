@@ -50,6 +50,7 @@ function OtherInventoryPage() {
   const [columns, setColumns] = useState({
     columns: [],
   });
+  const [customCells, setCustomCells] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [skus, setSkus] = React.useState('');
@@ -147,6 +148,44 @@ function OtherInventoryPage() {
     setColumns(columns);
   };
 
+  const handleChange = (changes, source) => {
+    if (changes) {
+      handleCells(filteredInventory);
+    }
+  }
+
+  const handleCells = (rowData) => {
+    let cells = [];
+    // always the same place in the array
+    const amountAvailableColumn = 2;
+    if (rowData) {
+      rowData.forEach((row, index) => {
+        if (row.minimum) {
+          if (row.amountAvailable === 0) {
+            cells.push({
+              row: index,
+              col: amountAvailableColumn,
+              className: 'htRight htNumeric red-highlight',
+            });
+          } else if (row.amountAvailable < row.minimum) {
+            cells.push({
+              row: index,
+              col: amountAvailableColumn,
+              className: 'htRight htNumeric yellow-highlight',
+            });
+          } else if (row.amountAvailable >= row.minimum) {
+            cells.push({
+              row: index,
+              col: amountAvailableColumn,
+              className: 'htRight htNumeric green-highlight',
+            });
+          }
+        }
+      });
+    }
+    setCustomCells(cells);
+  };
+
   const setTablePropertiesFromPassword = (password) => {
     if (SHEET_PWS.includes(password.toUpperCase())) {
       console.log('admin');
@@ -170,6 +209,7 @@ function OtherInventoryPage() {
         },
       });
     }
+    handleCells(filteredInventory);
   };
 
   useEffect(() => {
@@ -185,6 +225,7 @@ function OtherInventoryPage() {
         setInventory(result.rows);
         setFilteredInventory(result.rows);
         handleColumns(result.columns);
+        handleCells(result.rows);
         setIsLoading(false);
         handleSkus(result.rows);
       });
@@ -312,6 +353,8 @@ function OtherInventoryPage() {
           search='true'
           colHeaders={columns ? Object.keys(columns).map((el) => columns[el].columnHeader) : ''}
           columns={columns}
+          cell={customCells}
+          afterChange={handleChange}
           filters='true'
           selectionMode='multiple'
           outsideClickDeselects={false}
