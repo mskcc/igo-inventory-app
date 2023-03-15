@@ -159,8 +159,7 @@ function HomePage() {
     let cells = [];
     // always the same place in the array
     const amountAvailableColumn = 2;
-    console.log(rowData);
-    if (rowData) {
+    if (rowData && Array.isArray(rowData)) {
       rowData.forEach((row, index) => {
         if (row.minimum) {
           if (row.amountAvailable === 0) {
