@@ -158,6 +158,7 @@ function OtherInventoryPage() {
     let cells = [];
     // always the same place in the array
     const amountAvailableColumn = 2;
+    console.log(rowData);
     if (rowData) {
       rowData.forEach((row, index) => {
         if (row.minimum) {
