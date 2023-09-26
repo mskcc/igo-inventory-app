@@ -56,7 +56,6 @@ function HomePage() {
   const [skus, setSkus] = React.useState('');
   const [takeOut, setTakeOut] = React.useState('');
   const [isAdmin, setIsAdmin] = React.useState('');
-  const [sorting, setSorting] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState({ message: '', severity: 'success' });
 
@@ -79,7 +78,6 @@ function HomePage() {
       return Object.values(el).join().toLowerCase().includes(searchTerm.toLowerCase());
     });
     if (searchResults.length === 0) {
-      setSorting(false);
       setFilteredInventory([[]]);
     } else {
       setFilteredInventory(searchResults);
@@ -360,7 +358,7 @@ function HomePage() {
           filters='true'
           selectionMode='multiple'
           outsideClickDeselects={false}
-          columnSorting={sorting}
+          columnSorting={true}
           manualColumnResize={true}
           licenseKey='non-commercial-and-evaluation'
           rowHeaders={true}
