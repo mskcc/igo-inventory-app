@@ -201,9 +201,7 @@ function HomePage() {
       hotTableComponent.current.hotInstance.updateSettings({
         cells: function (row, col) {
           var cellProperties = {};
-
-          cellProperties.readOnly = columns[col].readOnly;
-
+          cellProperties.readOnly = true;
           return cellProperties;
         },
       });
