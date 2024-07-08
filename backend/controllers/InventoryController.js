@@ -15,6 +15,7 @@ const columns = [
   { columnHeader: '#Available', data: 'amountAvailable', type: 'numeric', readOnly: true },
   { columnHeader: 'Order Status', data: 'orderStatus', readOnly: true },
   { columnHeader: 'Min', data: 'minimum', readOnly: true },
+  { columnHeader: 'Max', data: 'maximum', readOnly: false },
   { columnHeader: 'Notes', data: 'notes', readOnly: false },
   { columnHeader: 'Location', data: 'discrepancies', readOnly: false },
 ];
@@ -156,6 +157,7 @@ exports.saveInventory = [
               notes: item.notes,
               discrepancies: item.discrepancies,
               minimum: item.minimum,
+              maximum: item.maximum,
             },
             $setOnInsert: { item },
           },
