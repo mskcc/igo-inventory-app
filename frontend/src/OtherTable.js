@@ -191,7 +191,7 @@ function OtherInventoryPage() {
       hotTableComponent.current.hotInstance.updateSettings({
         cells: function (row, col) {
           var cellProperties = {};
-          cellProperties.readOnly = false;
+          cellProperties.readOnly = true;
           return cellProperties;
         },
       });
